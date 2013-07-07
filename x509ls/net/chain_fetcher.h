@@ -24,11 +24,11 @@ class TrustStore;
 class ChainFetcher : public BaseObject {
  public:
   // Construct a ChainFetcher with |parent|, to fetch X509 certificates from
-  // |hostname_or_ip| on |port|. Uses a DNS lookup of type |address_family| and
+  // |hostname_or_ip| on |port|. Uses a DNS lookup of type |lookup_type| and
   // a TLS method (e.g. TLSv1) of |tls_method_index|.
   ChainFetcher(BaseObject* parent, TrustStore* trust_store,
       const string& hostname_or_ip, uint16 port,
-      DnsLookup::AddressFamily address_family,
+      DnsLookup::LookupType lookup_type,
       size_t tls_method_index, size_t tls_auth_type_index);
 
   // Calls Cancel().

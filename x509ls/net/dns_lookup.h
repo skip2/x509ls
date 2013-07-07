@@ -21,34 +21,38 @@ using std::string;
 namespace x509ls {
 // Perform an asynchronous DNS lookup.
 //
-// Resolves a single hostname using the system's default resolver. There are
-// four types of DNS lookup:
+// Resolves a single hostname using the system's default resolver. Also
+// "resolves" IPv4 and IPv6 address strings. There are four types of DNS lookup:
 //
-// - kAddressFamilyIPv4: Lookup A record only
-// - kAddressFamilyIPv6: Lookup AAAA record only
-// - kAddressFamilyIPv4then6: Lookup A record first, then try AAAA second.
-// - kAddressFamilyIPv6then4: Loookup AAAA record first, then try A second.
+// - kLookupTypeIPv4: Lookup A record only
+// - kLookupTypeIPv6: Lookup AAAA record only
+// - kLookupTypeIPv4then6: Lookup A record first, then try AAAA second.
+// - kLookupTypeIPv6then4: Lookup AAAA record first, then try A second.
 //
 // Lookups are asynchronous, with events emitted when name resolution has
-// succeeded or failed.
+// succeeded or failed. For the kLookupTypeIPvXthenX lookup types,
+// success/failure refers to the final result, no events are emitted if the
+// first lookup tried fails.
 //
-// For the kAddressFamilyIPvXthenX lookup types, success/failure refers to the
-// final result, no events are emitted if the first lookup tried fails.
+// Uses glibc's asynchronous DNS lookup function getaddrinfo_a(). This function
+// was buggy between about glibc versions 2.5-8. The glibc version is examined
+// upon calling Start() and an error occurs if any of these versions are being
+// used.
 class DnsLookup : public BaseObject {
  public:
-  enum AddressFamily {
-    kAddressFamilyIPv4,
-    kAddressFamilyIPv6,
-    kAddressFamilyIPv4then6,
-    kAddressFamilyIPv6then4
+  enum LookupType {
+    kLookupTypeIPv4,
+    kLookupTypeIPv6,
+    kLookupTypeIPv4then6,
+    kLookupTypeIPv6then4
   };
 
   // Construct a DnsLookup with |parent|, |hostname| (which may be an IP address
-  // string), |port|, and |address_family| lookup type.
+  // string), |port|, and |lookup_type| lookup type.
   //
   // |port| is placed into the sockaddr struct of successful lookups.
   DnsLookup(BaseObject* parent, const string& hostname,
-      uint16 port, AddressFamily address_family);
+      uint16 port, LookupType address_family);
 
   // Leaks memory if HasOutstandingRequests() is true.
   virtual ~DnsLookup();
@@ -59,7 +63,7 @@ class DnsLookup : public BaseObject {
   //
   // Eventually one of two events will be Emit()ed:
   // - kStateSuccess: DNS lookups succeeded. The result is available from the
-  // Sockaddr(), SockaddrLen() and IPAddress() methods.
+  //   Sockaddr(), SockaddrLen() and IPAddress() methods.
   // - kStateFail: DNS lookups failed.
   void Start();
 
@@ -99,7 +103,7 @@ class DnsLookup : public BaseObject {
   // - easier not to interact with ncurses' use of signals.
   virtual void OnPoll();
 
-  // The following methods are only valid when kStateSuccess is Emit()ed.
+  // The following methods are only valid when kStateSuccess is Emit()ed:
 
   // Returns the sockaddr struct of the successful lookup. The port is as
   // specified in the constructor.
@@ -111,29 +115,29 @@ class DnsLookup : public BaseObject {
   // Returns a text representation of the IP address.
   string IPAddress() const;
 
-  // Methods for choosing the AddressFamily.
+  // Methods for choosing the LookupType.
 
-  // Returns a short string describing |address_family|, suitable for displaying
+  // Returns a short string describing |lookup_type|, suitable for displaying
   // to the user.
-  static string AddressFamilyName(const AddressFamily& address_family);
+  static string LookupTypeName(const LookupType& address_family);
 
-  // Returns the next AddressFamily in the list after |address_family|.
+  // Returns the next LookupType in the list after |lookup_type|.
   //
-  // For the last AddressFamily in the list, the first AddressFamily is
+  // For the last LookupType in the list, the first LookupType is
   // returned. This enables a CLI control to easily and obliviously cycle
   // through the possible options continuously.
-  // next |address_family|
-  static AddressFamily NextAddressFamily(
-      const AddressFamily& address_family);
+  static LookupType NextLookupType(
+      const LookupType& lookup_type);
 
+  // In the kStateFail state returns a short string describing the error.
   string ErrorMessage() const;
 
  private:
   NO_COPY_AND_ASSIGN(DnsLookup)
 
   const string hostname_;
-  const uint16 port_;
-  const enum AddressFamily address_family_;
+  char* port_str_;
+  const enum LookupType lookup_type_;
 
   struct gaicb* request_ptrs[2];
   struct gaicb requests[2];
@@ -141,7 +145,6 @@ class DnsLookup : public BaseObject {
   int request_count_;
   int result_index_;
 
-  char* port_str_;
 
   void SetState(State state, bool emit_event = false);
   State state_;

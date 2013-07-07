@@ -9,7 +9,7 @@
 namespace x509ls {
 ChainFetcher::ChainFetcher(BaseObject* parent, TrustStore* trust_store,
     const string& hostname_or_ip,
-    uint16 port, DnsLookup::AddressFamily address_family,
+    uint16 port, DnsLookup::LookupType lookup_type,
     size_t tls_method_index, size_t tls_auth_type_index)
   :
   BaseObject(parent),
@@ -18,7 +18,7 @@ ChainFetcher::ChainFetcher(BaseObject* parent, TrustStore* trust_store,
   port_(port),
   tls_method_index_(tls_method_index),
   tls_auth_type_index_(tls_auth_type_index),
-  lookup_(new DnsLookup(this, hostname_or_ip, port_, address_family)),
+  lookup_(new DnsLookup(this, hostname_or_ip, port_, lookup_type)),
   ssl_client_(NULL),
   state_(kStateStart) {
   Subscribe(lookup_, DnsLookup::kStateSuccess);

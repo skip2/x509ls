@@ -75,7 +75,7 @@ class CertificateListLayout : public CliControl {
 
   // ---------------------------------------------------------------------------
   // Toggle options.
-  enum DnsLookup::AddressFamily address_family_;
+  enum DnsLookup::LookupType lookup_type_;
   size_t tls_method_index_;
   size_t tls_auth_type_index_;
   void UpdateStatusBarOptionsText();

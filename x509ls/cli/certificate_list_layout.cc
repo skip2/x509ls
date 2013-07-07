@@ -43,7 +43,7 @@ CertificateListLayout::CertificateListLayout(CliApplication* application,
     bottom_status_bar_(new StatusBar(this, "")),
     command_line_(new CommandLine(this)),
     displayed_list_control_index_(kListControlIndexVerificationPath),
-    address_family_(DnsLookup::kAddressFamilyIPv4then6),
+    lookup_type_(DnsLookup::kLookupTypeIPv4then6),
     tls_method_index_(0),
     tls_auth_type_index_(0),
     current_fetcher_(NULL) {
@@ -105,7 +105,7 @@ bool CertificateListLayout::KeyPressEvent(int keypress) {
     UpdateStatusBarOptionsText();
     break;
   case 'v':
-    address_family_ = DnsLookup::NextAddressFamily(address_family_);
+    lookup_type_ = DnsLookup::NextLookupType(lookup_type_);
     UpdateStatusBarOptionsText();
     handled = true;
     break;
@@ -206,7 +206,7 @@ void CertificateListLayout::GotoHost(const string& user_input_hostname) {
   }
 
   current_fetcher_ = new ChainFetcher(this, trust_store_, user_input_hostname_,
-      443, address_family_, tls_method_index_, tls_auth_type_index_);
+      443, lookup_type_, tls_method_index_, tls_auth_type_index_);
   Subscribe(current_fetcher_, ChainFetcher::kStateResolving);
   Subscribe(current_fetcher_, ChainFetcher::kStateResolveFail);
   Subscribe(current_fetcher_, ChainFetcher::kStateConnecting);
@@ -263,7 +263,7 @@ void CertificateListLayout::UpdateStatusBarOptionsText() {
   options_text << SslClient::TlsMethodName(tls_method_index_);
 
   options_text << " v:";
-  options_text << DnsLookup::AddressFamilyName(address_family_);
+  options_text << DnsLookup::LookupTypeName(lookup_type_);
 
   options_text << " ";
 

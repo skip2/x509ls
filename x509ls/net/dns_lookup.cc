@@ -13,17 +13,16 @@
 
 namespace x509ls {
 DnsLookup::DnsLookup(BaseObject* parent, const string& hostname,
-      uint16 port, AddressFamily address_family)
+      uint16 port, LookupType lookup_type)
   :
     BaseObject(parent),
     hostname_(hostname),
-    port_(port),
-    address_family_(address_family),
+    lookup_type_(lookup_type),
     request_count_(0),
     result_index_(-1),
     state_(kStateStart) {
   std::stringstream port_str;
-  port_str << port_;
+  port_str << port;
 
   port_str_ = strdup(port_str.str().c_str());
 }
@@ -63,18 +62,18 @@ void DnsLookup::Start() {
   int ipv6_index = -1;
   request_count_ = 0;
 
-  switch (address_family_) {
-  case kAddressFamilyIPv4:
+  switch (lookup_type_) {
+  case kLookupTypeIPv4:
     ipv4_index = 0;
     break;
-  case kAddressFamilyIPv6:
+  case kLookupTypeIPv6:
     ipv6_index = 0;
     break;
-  case kAddressFamilyIPv4then6:
+  case kLookupTypeIPv4then6:
     ipv4_index = 0;
     ipv6_index = 1;
     break;
-  case kAddressFamilyIPv6then4:
+  case kLookupTypeIPv6then4:
     ipv4_index = 1;
     ipv6_index = 0;
     break;
@@ -147,20 +146,20 @@ void DnsLookup::OnPoll() {
 }
 
 // static
-string DnsLookup::AddressFamilyName(
-    const DnsLookup::AddressFamily& address_family) {
+string DnsLookup::LookupTypeName(
+    const DnsLookup::LookupType& lookup_type) {
   string result;
-  switch (address_family) {
-  case kAddressFamilyIPv4:
+  switch (lookup_type) {
+  case kLookupTypeIPv4:
     result = "IPv4";
     break;
-  case kAddressFamilyIPv6:
+  case kLookupTypeIPv6:
     result = "IPv6";
     break;
-  case kAddressFamilyIPv4then6:
+  case kLookupTypeIPv4then6:
     result = "IPv4,6";
     break;
-  case kAddressFamilyIPv6then4:
+  case kLookupTypeIPv6then4:
     result = "IPv6,4";
     break;
   default:
@@ -171,14 +170,14 @@ string DnsLookup::AddressFamilyName(
 }
 
 // static
-DnsLookup::AddressFamily DnsLookup::NextAddressFamily(
-    const DnsLookup::AddressFamily& address_family) {
-  int new_address_family = static_cast<int>(address_family) + 1;
-  if (new_address_family > kAddressFamilyIPv6then4) {
-    new_address_family = static_cast<int>(kAddressFamilyIPv4);
+DnsLookup::LookupType DnsLookup::NextLookupType(
+    const DnsLookup::LookupType& lookup_type) {
+  int new_lookup_type = static_cast<int>(lookup_type) + 1;
+  if (new_lookup_type > kLookupTypeIPv6then4) {
+    new_lookup_type = static_cast<int>(kLookupTypeIPv4);
   }
 
-  return static_cast<AddressFamily>(new_address_family);
+  return static_cast<LookupType>(new_lookup_type);
 }
 
 const sockaddr* DnsLookup::Sockaddr() const {
