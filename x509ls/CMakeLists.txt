@@ -56,6 +56,7 @@ SET(SOURCES
 ADD_EXECUTABLE(x509ls ${SOURCES})
 TARGET_LINK_LIBRARIES(x509ls ${LIBS})
 
+IF(DEFINED LINT)
 FILE(DOWNLOAD
   http://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py
   ${CMAKE_BINARY_DIR}/cpplint.py
@@ -68,6 +69,9 @@ ADD_CUSTOM_TARGET(Lint ALL ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/cpplint.py
   x509ls/*/*/*.h x509ls/*/*/*.cc
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
+UNSET(LINT)
+ENDIF()
 
 INSTALL(TARGETS x509ls DESTINATION bin)
+INSTALL(FILES x509ls.1 DESTINATION share/man/man1/)
 
