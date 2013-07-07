@@ -1,0 +1,36 @@
+Install instructions
+--------------------
+
+# !!! still under heavy development.
+
+Requirements:
+- CMake & make
+- a C++ compiler
+- ncurses
+- openssl v1.0.0+
+- glibc 2.9+
+
+For Ubuntu 12.04 LTS run:
+ sudo apt-get install cmake make g++ libncurses5-dev libssl-dev
+
+For RHEL6.4 run:
+ sudo yum install cmake gcc-c++ ncurses-devel openssl-devel
+
+
+To build & run x509ls:
+----------------------
+
+ mkdir build
+ cd build
+
+ cmake ../
+ make
+
+ x509ls/x509ls
+
+
+To install:
+-----------
+
+ sudo make install
+
