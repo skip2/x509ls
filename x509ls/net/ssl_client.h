@@ -19,19 +19,46 @@
 
 using std::string;
 
-struct sockaddr;
-
 namespace x509ls {
+// Connect to an SSL server asynchronously and fetch the certificate chain.
+//
+//
+//
+// - SetSNIHostname() allows SNI to be used.
+// - Compression (i.e. DEFLATE) is disabled: Not specifically because of the
+// security risk in doing so (the CRIME attack...), rather that connections to
+// google.com, EC-only currently do not succeed with compression enabled.
 class SslClient : public BaseObject {
  public:
+  // Construct an SslClient with |parent|, to connect to |saddr| (with length
+  // |saddr_len| using TLS method |tls_method_index| and auth type (RSA/EC...)
+  // |tls_auth_type_index|. Validate the end-entity certificate found using
+  // |trust_store|.
   SslClient(BaseObject* parent, TrustStore* trust_store,
       const sockaddr* saddr, socklen_t saddr_len,
       size_t tls_method_index = 0, size_t tls_auth_type_index = 0);
   virtual ~SslClient();
 
+  // Set the Server Name Indication hostname to |hostname|.
+  //
+  // Call before Start().
+  //
+  // Hints to servers serving multiple virtual hosts (and thus potentially
+  // serving multiple certificates) which |hostname|, and thus which certificate
+  // is required.
+  void SetSNIHostname(const string& hostname);
+
+  // Start the network connection.
+  //
+  // Call only once.
+  //
+  // The below kState* events will be emitted as the connection progresses.
   void Connect();
+
+  // Cancel the network connection. The state is updated to kStateCancel.
   void Cancel();
 
+  // State machine.
   enum State {
     kStateStart,
     kStateConnecting,   // Emitted as an event.
@@ -41,7 +68,12 @@ class SslClient : public BaseObject {
     kStateSuccess,      // Emitted as an event.
     kStateCancel        // Emitted as an event.
   };
+  // The kStateSuccess state only indicates the server chain could be fetched.
+  // It does not refer to certificate validation: SslClient disables certificate
+  // validation for connections, to ensure invalid certificates can still be
+  // examined.
 
+  // Receives FD readable/writable events.
   virtual void OnFDEvent(int fd, bool read_event,
       bool write_event, bool error_event);
 
@@ -59,11 +91,15 @@ class SslClient : public BaseObject {
   static string TlsAuthTypeName(size_t tls_auth_type_index);
   static size_t NextAuthType(size_t tls_auth_type_index);
 
+  // In the kStateSuccess state:
+  // Return the server's chain.
   const CertificateList& Chain() const;
-  const CertificateList& Path() const;
-  string VerifyStatus() const;
 
-  void SetSNIHostname(const string& hostname);
+  // Return the validation path formed by OpenSSL.
+  const CertificateList& Path() const;
+
+  // Return the validation status string from OpenSSL.
+  string VerifyStatus() const;
 
  private:
   NO_COPY_AND_ASSIGN(SslClient)

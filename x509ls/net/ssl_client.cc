@@ -9,8 +9,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <openssl/safestack.h>
-#include <openssl/stack.h>
 #include <openssl/x509.h>
 
 #include <list>

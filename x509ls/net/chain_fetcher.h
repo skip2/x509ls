@@ -24,8 +24,8 @@ class TrustStore;
 class ChainFetcher : public BaseObject {
  public:
   // Construct a ChainFetcher with |parent|, to fetch X509 certificates from
-  // |hostname_or_ip| on |port|. Uses a DNS lookup of type |lookup_type| and
-  // a TLS method (e.g. TLSv1) of |tls_method_index|.
+  // |hostname_or_ip| on |port|. Use a DNS lookup of type |lookup_type| and
+  // the TLS method (e.g. TLSv1) |tls_method_index|.
   ChainFetcher(BaseObject* parent, TrustStore* trust_store,
       const string& hostname_or_ip, uint16 port,
       DnsLookup::LookupType lookup_type,
@@ -51,7 +51,7 @@ class ChainFetcher : public BaseObject {
   //
   // A series of events are Emit()ed during this process:
   // - kStateResolving: DNS lookups started
-  // - kStateResolveFailed: DNS lookups failed
+  // - kStateResolveFail: DNS lookups failed
   // - kStateConnecting: TLS connection started
   // - kStateConnectSuccess: TLS connection succeeded, certificates available
   // - kStateConnectFail: TLS connection failed
@@ -62,17 +62,24 @@ class ChainFetcher : public BaseObject {
   // The state is updated to kStateCancel.
   void Cancel();
 
-  // On success returns a string representation of the IP address
-  string IPAddress() const;
-
-  // X509 chain accessors.
-  const CertificateList* Chain() const;
-  const CertificateList* Path() const;
-  string VerifyStatus() const;
-
   // Receives events from DnsLookup, SslClient objects.
   virtual void OnEvent(const BaseObject* source, int event_code);
 
+  // Methods valid in the kStateConnectSuccess state:
+  // Return a string representation of the IP address.
+  string IPAddress() const;
+
+  // Return the server's certificate chain.
+  const CertificateList* Chain() const;
+
+  // Return the validation path formed by OpenSSL.
+  const CertificateList* Path() const;
+
+  // Return the validation status string from OpenSSL.
+  string VerifyStatus() const;
+
+  // Methods valid in the kStateResolveFail state:
+  // Return the DnsLookup's error message.
   string ErrorMessage() const;
 
  private:
