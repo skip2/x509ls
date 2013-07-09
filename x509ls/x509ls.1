@@ -1,3 +1,64 @@
 .TH X509LS "1" "July 2013" "X509LS" "User Commands"
 
+.SH NAME
+x509ls \- text-based SSL server certificate viewer
+
+.SH SYNOPSIS
+\fBx509ls\fR [\fB\-\-capath\fR=/path/to/capath] [\fB\-\-cafile\fR=/path/to/a-certificate-bundle.pem] [\fBhost\fR:[\fBport\fR]]
+
+.SH DESCRIPTION
+\fBx509ls\fR is an interactive viewer for the X509 certificates sent by SSL
+servers during initial handshaking. It's similar to the Certificate Viewer
+feature found in web browsers, only more keyboard friendly.
+
+The interface is navigated by single key shortcuts displayed on screen, the
+up/down arrow keys, page up/page down, and the enter key. There are two screen
+layouts: The main screen has a list of certificates with a preview pane, and the
+certificate view screen displays a single certificate.
+
+The most useful keys are "q:quit" and "g:goto". Usage is self-explanatory, but
+as an example: To view the certificates at ssl.example.org type: "g
+ssl.example.org <enter>". Use the "t:toggle-display" key to switch between two
+views:
+
+.TP
+\fBServer chain view\fR
+Lists the certificates present in the server chain. These include the end-entity
+certificate (for the server, e.g. CN=server.example.org), and any additional
+certificates sent to aid certificate validation.
+
+.TP
+\fBValidation path view\fR
+Shows the validation path formed. Displayed as a hierarchy with + symbols.
+
+.PP
+The main screen has options to toggle the IPv4/6 usage/priority, the SSL method
+(SSL/TLS version), and the authentication method (RSA, EC or DSS).
+
+The certificate view allows saving the current certificate in PEM format.
+
+.SH OPTIONS
+.PP
+OpenSSL's default trust store (set of trusted root certificates) is used by
+default. To specify an alternative:
+
+.TP
+\fB\-\-cafile\fR=/path/to/a-certificate-bundle.pem
+Trust the specified bundle of PEM certificates.
+
+.TP
+\fB\-\-capath\fR=/path/to/capath
+Trust the specified directory of PEM certificates. Use c_rehash(1) if necessary
+to create symbolic links required by OpenSSL.
+
+.SH NOTES
+.PP
+EC support may disabled by some Linux Distributions, due to
+patent-related uncertainty.
+
+.SH LICENSE & COPYRIGHT
+Copyright 2013 Tom Harwood.
+
+.PP
+BSD 2-Clause License.
 
