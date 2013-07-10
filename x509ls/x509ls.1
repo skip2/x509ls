@@ -6,6 +6,20 @@ x509ls \- text-based SSL server certificate viewer
 .SH SYNOPSIS
 \fBx509ls\fR [\fB\-\-capath\fR=/path/to/capath] [\fB\-\-cafile\fR=/path/to/a-certificate-bundle.pem] [\fBhost\fR:[\fBport\fR]]
 
+.SH OPTIONS
+.PP
+OpenSSL's default trust store (set of trusted root certificates) is used by
+default. To specify an alternative:
+
+.TP
+\fB\-\-cafile\fR=/path/to/a-certificate-bundle.pem
+Trust the specified bundle of PEM certificates.
+
+.TP
+\fB\-\-capath\fR=/path/to/capath
+Trust the specified directory of PEM certificates. Use c_rehash(1) if necessary
+to create symbolic links required by OpenSSL.
+
 .SH DESCRIPTION
 \fBx509ls\fR is an interactive viewer for the X509 certificates sent by SSL
 servers during initial handshaking. It's similar to the Certificate Viewer
@@ -37,19 +51,22 @@ The main screen has options to toggle the IPv4/6 usage/priority, the SSL method
 
 The certificate view allows saving the current certificate in PEM format.
 
-.SH OPTIONS
+.SH CERTIFICATE FLAGS
 .PP
-OpenSSL's default trust store (set of trusted root certificates) is used by
-default. To specify an alternative:
+Flags are displayed next to each certificate listed. These represent:
 
 .TP
-\fB\-\-cafile\fR=/path/to/a-certificate-bundle.pem
-Trust the specified bundle of PEM certificates.
+\fBs\fR Self-signed certificate.
 
 .TP
-\fB\-\-capath\fR=/path/to/capath
-Trust the specified directory of PEM certificates. Use c_rehash(1) if necessary
-to create symbolic links required by OpenSSL.
+\fBt\fR Present in the trust store.
+
+.TP
+\fBv\fR Present in the validation path formed by OpenSSL.
+
+.TP
+\fBc\fR Present in the server's certificate chain.
+
 
 .SH NOTES
 .PP
