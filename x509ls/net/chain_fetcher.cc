@@ -8,17 +8,18 @@
 
 namespace x509ls {
 ChainFetcher::ChainFetcher(BaseObject* parent, TrustStore* trust_store,
-    const string& hostname_or_ip,
-    uint16 port, DnsLookup::LookupType lookup_type,
+    const string& node,
+    const string& service,
+    DnsLookup::LookupType lookup_type,
     size_t tls_method_index, size_t tls_auth_type_index)
   :
   BaseObject(parent),
   trust_store_(trust_store),
-  hostname_or_ip_(hostname_or_ip),
-  port_(port),
+  node_(node),
+  service_(service),
   tls_method_index_(tls_method_index),
   tls_auth_type_index_(tls_auth_type_index),
-  lookup_(new DnsLookup(this, hostname_or_ip, port_, lookup_type)),
+  lookup_(new DnsLookup(this, node_, service_, lookup_type)),
   ssl_client_(NULL),
   state_(kStateStart) {
   Subscribe(lookup_, DnsLookup::kStateSuccess);
@@ -70,9 +71,7 @@ void ChainFetcher::OnEvent(const BaseObject* source, int event_code) {
       ssl_client_ = new SslClient(this, trust_store_, lookup_->Sockaddr(),
           lookup_->SockaddrLen(), tls_method_index_, tls_auth_type_index_);
 
-      if (LooksLikeHostname(hostname_or_ip_)) {
-        ssl_client_->SetSNIHostname(hostname_or_ip_);
-      }
+      ssl_client_->SetSNIHostname(node_);
 
       Subscribe(ssl_client_, SslClient::kStateConnectFail);
       Subscribe(ssl_client_, SslClient::kStateTlsFail);
@@ -100,8 +99,8 @@ void ChainFetcher::SetState(const State& state) {
   Emit(state_);
 }
 
-string ChainFetcher::IPAddress() const {
-  return lookup_->IPAddress();
+string ChainFetcher::IPAddressAndPort() const {
+  return lookup_->IPAddressAndPort();
 }
 
 const CertificateList* ChainFetcher::Chain() const {
@@ -114,20 +113,6 @@ const CertificateList* ChainFetcher::Path() const {
 
 string ChainFetcher::VerifyStatus() const {
   return ssl_client_->VerifyStatus();
-}
-
-// static
-bool ChainFetcher::LooksLikeHostname(const string& hostname_or_ip) {
-  // Approximate: 0x1.0x2.0x3.0x4 will confuse it.
-  for (string::const_iterator it = hostname_or_ip.begin();
-      it != hostname_or_ip.end();
-      ++it) {
-    if (isalpha(*it)) {
-      return true;
-    }
-  }
-
-  return false;
 }
 
 string ChainFetcher::ErrorMessage() const {

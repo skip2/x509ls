@@ -160,7 +160,9 @@ bool SslClient::SetupOpenSSL() {
   }
 
 #ifdef SSL_set_tlsext_host_name
-  SSL_set_tlsext_host_name(ssl_, sni_name_.c_str());
+  if (!sni_name_.empty()) {
+    SSL_set_tlsext_host_name(ssl_, sni_name_.c_str());
+  }
 #endif
 
   return true;

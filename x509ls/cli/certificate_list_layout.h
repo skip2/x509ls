@@ -82,7 +82,7 @@ class CertificateListLayout : public CliControl {
 
   // ---------------------------------------------------------------------------
   // Stored user input, to enable reloading of a
-  string user_input_hostname_;
+  string user_input_node_;
 
   // ---------------------------------------------------------------------------
   // Current network worker.
@@ -99,6 +99,14 @@ class CertificateListLayout : public CliControl {
   void ToggleDisplayedListControl();
   void UpdateDisplayedCertificate();
   void ShowCertificateViewLayout();
+
+  static bool ReadUserInputNode(const string& node_input,
+      string* node, string* port);
+
+  static bool DetermineNodeAndPort(const string& node_input,
+      string* node, string* port);
+
+  static void TidyNode(string* node);
 };
 }  // namespace x509ls
 

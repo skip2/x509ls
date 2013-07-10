@@ -11,37 +11,28 @@
 
 #include <sstream>
 
+using std::stringstream;
+
 namespace x509ls {
-DnsLookup::DnsLookup(BaseObject* parent, const string& hostname,
-      uint16 port, LookupType lookup_type)
+DnsLookup::DnsLookup(BaseObject* parent, const string& node,
+      const string& service, LookupType lookup_type)
   :
     BaseObject(parent),
-    hostname_(hostname),
+    node_(node),
+    service_(service),
     lookup_type_(lookup_type),
     request_count_(0),
     result_index_(-1),
     state_(kStateStart) {
-  std::stringstream port_str;
-  port_str << port;
-
-  port_str_ = strdup(port_str.str().c_str());
 }
 
 // virtual
 DnsLookup::~DnsLookup() {
-  bool still_need_port_str = false;
-
   for (int i = 0; i < request_count_; ++i) {
     int state = gai_cancel(&requests[i]);
     if (state == EAI_CANCELED || state == EAI_ALLDONE) {
       freeaddrinfo(requests[i].ar_result);
-    } else {
-      still_need_port_str = true;
     }
-  }
-
-  if (!still_need_port_str) {
-    free(port_str_);
   }
 }
 
@@ -82,7 +73,7 @@ void DnsLookup::Start() {
   }
 
   for (int i = 0; i < 2; ++i) {
-    config[i].ai_flags = AI_NUMERICSERV;
+    config[i].ai_flags = 0;
     config[i].ai_socktype = SOCK_STREAM;
     config[i].ai_protocol = IPPROTO_TCP;
     config[i].ai_addrlen = 0;
@@ -95,16 +86,16 @@ void DnsLookup::Start() {
 
   if (ipv4_index != -1) {
     request_count_++;
-    requests[ipv4_index].ar_name = hostname_.c_str();
-    requests[ipv4_index].ar_service = port_str_;
+    requests[ipv4_index].ar_name = node_.c_str();
+    requests[ipv4_index].ar_service = service_.c_str();
     requests[ipv4_index].ar_request = &config[0];
     requests[ipv4_index].ar_result = NULL;
   }
 
   if (ipv6_index != -1) {
     request_count_++;
-    requests[ipv6_index].ar_name = hostname_.c_str();
-    requests[ipv6_index].ar_service = port_str_;
+    requests[ipv6_index].ar_name = node_.c_str();
+    requests[ipv6_index].ar_service = service_.c_str();
     requests[ipv6_index].ar_request = &config[1];
     requests[ipv6_index].ar_result = NULL;
   }
@@ -137,7 +128,7 @@ void DnsLookup::OnPoll() {
       if (i == request_count_ - 1) {
         // Last request (thus all requests) have errors?
         SetState(kStateFail, true);
-        error_message_ = "DNS lookup failed.";
+        error_message_ = "Name/service lookup failed.";
         DisablePoll();
         return;
       }
@@ -190,16 +181,29 @@ socklen_t DnsLookup::SockaddrLen() const {
   return requests[result_index_].ar_result->ai_addrlen;
 }
 
-string DnsLookup::IPAddress() const {
+string DnsLookup::IPAddressAndPort() const {
   if (result_index_ == -1) {
     return "";
   }
 
   char host[NI_MAXHOST];
+  char port[NI_MAXSERV];
   getnameinfo(Sockaddr(), SockaddrLen(), host, sizeof(host),
-      NULL, 0, NI_NUMERICHOST);
+      port, sizeof(port), NI_NUMERICHOST | NI_NUMERICSERV);
 
-  return host;
+  stringstream result;
+  if (Sockaddr()->sa_family == AF_INET6) {
+    result << "[";
+    result << host;
+    result << "]:";
+    result << port;
+  } else {
+    result << host;
+    result << ":";
+    result << port;
+  }
+
+  return result.str();
 }
 
 void DnsLookup::Cancel() {

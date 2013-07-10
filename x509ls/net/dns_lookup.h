@@ -47,12 +47,12 @@ class DnsLookup : public BaseObject {
     kLookupTypeIPv6then4
   };
 
-  // Construct a DnsLookup with |parent|, |hostname| (which may be an IP address
-  // string), |port|, and |lookup_type| lookup type.
-  //
-  // |port| is placed into the sockaddr struct of successful lookups.
-  DnsLookup(BaseObject* parent, const string& hostname,
-      uint16 port, LookupType address_family);
+  // Construct a DnsLookup with |parent|, |node| (which may be an IP address
+  // string), |service|, and |lookup_type| lookup type. |service| should be
+  // either a port number (e.g. "443") or a recognised service string (e.g.
+  // "https"). Service strings are documented in services(5).
+  DnsLookup(BaseObject* parent, const string& node,
+      const string& service, LookupType address_family);
 
   // Leaks memory if HasOutstandingRequests() is true.
   virtual ~DnsLookup();
@@ -105,15 +105,15 @@ class DnsLookup : public BaseObject {
 
   // The following methods are only valid when kStateSuccess is Emit()ed:
 
-  // Returns the sockaddr struct of the successful lookup. The port is as
-  // specified in the constructor.
+  // Returns the sockaddr struct of the successful lookup. The returned sockaddr
+  // struct has both the resolved IP address, and the resolved service set.
   const sockaddr* Sockaddr() const;
 
   // Returns the length of the sockaddr struct.
   socklen_t SockaddrLen() const;
 
-  // Returns a text representation of the IP address.
-  string IPAddress() const;
+  // Returns a text representation of the IP address and port.
+  string IPAddressAndPort() const;
 
   // Methods for choosing the LookupType.
 
@@ -135,8 +135,8 @@ class DnsLookup : public BaseObject {
  private:
   NO_COPY_AND_ASSIGN(DnsLookup)
 
-  const string hostname_;
-  char* port_str_;
+  const string node_;
+  const string service_;
   const enum LookupType lookup_type_;
 
   struct gaicb* request_ptrs[2];

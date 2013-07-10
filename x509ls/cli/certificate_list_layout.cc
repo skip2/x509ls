@@ -5,7 +5,9 @@
 
 #include <ctype.h>
 #include <ncurses.h>
+#include <stdlib.h>
 
+#include <algorithm>
 #include <sstream>
 
 #include "x509ls/cli/base/cli_application.h"
@@ -110,8 +112,8 @@ bool CertificateListLayout::KeyPressEvent(int keypress) {
     handled = true;
     break;
   case 'r':
-    if (user_input_hostname_.size() > 0) {
-      GotoHost(user_input_hostname_);
+    if (user_input_node_.size() > 0) {
+      GotoHost(user_input_node_);
     }
     handled = true;
     break;
@@ -189,9 +191,7 @@ void CertificateListLayout::OnEvent(const BaseObject* source, int event_code) {
   }
 }
 
-void CertificateListLayout::GotoHost(const string& user_input_hostname) {
-  user_input_hostname_ = user_input_hostname;
-
+void CertificateListLayout::GotoHost(const string& user_input_node) {
   if (current_fetcher_ != NULL) {
     current_fetcher_->Cancel();
     Unsubscribe(current_fetcher_);
@@ -203,10 +203,22 @@ void CertificateListLayout::GotoHost(const string& user_input_hostname) {
     bottom_status_bar_->SetMainText("");
 
     DeleteChild(current_fetcher_);
+    current_fetcher_ = NULL;
   }
 
-  current_fetcher_ = new ChainFetcher(this, trust_store_, user_input_hostname_,
-      443, lookup_type_, tls_method_index_, tls_auth_type_index_);
+  user_input_node_ = user_input_node;
+  string node;
+  string port;
+
+  if (user_input_node_.empty()) {
+    return;
+  } else if (!ReadUserInputNode(user_input_node_, &node, &port)) {
+    command_line_->DisplayMessage("Unable to understand " + user_input_node_);
+    return;
+  }
+
+  current_fetcher_ = new ChainFetcher(this, trust_store_, node,
+      port, lookup_type_, tls_method_index_, tls_auth_type_index_);
   Subscribe(current_fetcher_, ChainFetcher::kStateResolving);
   Subscribe(current_fetcher_, ChainFetcher::kStateResolveFail);
   Subscribe(current_fetcher_, ChainFetcher::kStateConnecting);
@@ -239,14 +251,14 @@ void CertificateListLayout::DisplayConnectFailedMessage() {
   command_line_->DisplayMessage(message.str());
 }
 
-
 string CertificateListLayout::LocationText() const {
   std::stringstream message;
-  message << user_input_hostname_;
+  message << user_input_node_;
 
-  if (current_fetcher_->IPAddress().size() > 0) {
+  const string ip_and_port = current_fetcher_->IPAddressAndPort();
+  if (ip_and_port.size() > 0) {
     message << " (";
-    message << current_fetcher_->IPAddress();
+    message << ip_and_port;
     message << ")";
   }
 
@@ -304,6 +316,49 @@ void CertificateListLayout::ShowCertificateViewLayout() {
 
   GetApplication()->Show(
       new CertificateViewLayout(GetApplication(), *certificate));
+}
+
+// static
+bool CertificateListLayout::ReadUserInputNode(const string& node_input,
+    string* node, string* port) {
+  // Sets the default port number if necessary.
+  if (!DetermineNodeAndPort(node_input, node, port)) {
+    return false;
+  }
+
+  TidyNode(node);
+
+  return true;
+}
+
+// static
+bool CertificateListLayout::DetermineNodeAndPort(
+    const string& node_input, string* node, string* port) {
+  const size_t close_bracket_index = node_input.rfind(']');
+  const size_t colon_index = node_input.rfind(':');
+
+  if (node_input.empty() || colon_index == 0) {
+    return false;
+  } else if (colon_index == string::npos ||
+      close_bracket_index == node_input.size() - 1) {
+    *node = node_input;
+    *port = "443";  // Default port (HTTPS) is set here.
+  } else {
+    *node = node_input.substr(0, colon_index);
+    if (colon_index >= node_input.size() - 1) {
+      return false;
+    }
+
+    *port = node_input.substr(colon_index + 1);
+  }
+
+  return true;
+}
+
+// static
+void CertificateListLayout::TidyNode(string* node) {
+  node->erase(std::remove(node->begin(), node->end(), '['), node->end());
+  node->erase(std::remove(node->begin(), node->end(), ']'), node->end());
 }
 }  // namespace x509ls
 

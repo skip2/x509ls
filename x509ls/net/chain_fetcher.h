@@ -17,17 +17,18 @@ namespace x509ls {
 class TrustStore;
 // Fetch X509 certificates over TLS asynchronously.
 //
-// First initiates an DNS lookup on |hostname_or_ip|. If the name is
-// successfully resolved (always true for IP address strings), then attempts a
-// TLS connection on the specified port. Emits a number of events to indicate
-// progress.
+// First initiates an DNS lookup on |node|. |node| may be an IP address or
+// hostname. If the name is successfully resolved (always true for IP address
+// strings), then attempts a TLS connection on the specified |service|.
+// |service| may be a port number, or service string (e.g. https) as recognised
+// by the system. Emits a number of events to indicate progress.
 class ChainFetcher : public BaseObject {
  public:
   // Construct a ChainFetcher with |parent|, to fetch X509 certificates from
-  // |hostname_or_ip| on |port|. Use a DNS lookup of type |lookup_type| and
+  // |node| on |service|. Use a DNS lookup of type |lookup_type| and
   // the TLS method (e.g. TLSv1) |tls_method_index|.
   ChainFetcher(BaseObject* parent, TrustStore* trust_store,
-      const string& hostname_or_ip, uint16 port,
+      const string& node, const string& service,
       DnsLookup::LookupType lookup_type,
       size_t tls_method_index, size_t tls_auth_type_index);
 
@@ -66,8 +67,8 @@ class ChainFetcher : public BaseObject {
   virtual void OnEvent(const BaseObject* source, int event_code);
 
   // Methods valid in the kStateConnectSuccess state:
-  // Return a string representation of the IP address.
-  string IPAddress() const;
+  // Return a string representation of the IP address and port.
+  string IPAddressAndPort() const;
 
   // Return the server's certificate chain.
   const CertificateList* Chain() const;
@@ -87,8 +88,8 @@ class ChainFetcher : public BaseObject {
 
   TrustStore* const trust_store_;
 
-  const string hostname_or_ip_;
-  const uint16 port_;
+  const string node_;
+  const string service_;
   const size_t tls_method_index_;
   const size_t tls_auth_type_index_;
 
@@ -97,8 +98,6 @@ class ChainFetcher : public BaseObject {
 
   enum State state_;
   void SetState(const State& state);
-
-  static bool LooksLikeHostname(const string& hostname_or_ip);
 };
 }  // namespace x509ls
 
