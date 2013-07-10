@@ -32,6 +32,8 @@ class CertificateListLayout : public CliControl {
   CertificateListLayout(CliApplication* application, TrustStore* trust_store);
   virtual ~CertificateListLayout();
 
+  void GotoHost(const string& user_input_node);
+
   virtual void OnEvent(const BaseObject* source, int event_code);
 
  protected:
@@ -71,7 +73,6 @@ class CertificateListLayout : public CliControl {
   enum TextInputType current_text_input_type_;
 
   void ShowGotoHostPrompt();
-  void GotoHost(const string& hostname);
 
   // ---------------------------------------------------------------------------
   // Toggle options.

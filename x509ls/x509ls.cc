@@ -65,12 +65,25 @@ bool X509LS::Init(int argc, char** argv) {
     trust_store_.AddSystemCAPath();
   }
 
+  if (optind == argc - 1) {
+    host_port_ = argv[optind];
+  } else if (optind < argc - 1) {
+    fprintf(stderr,
+        "Unexpected arguments, expecting a host:port argument only.\n");
+    success = false;
+  }
+
   return success;
 }
 
 // virtual
 void X509LS::RunEvent() {
-  Show(new CertificateListLayout(this, &trust_store_));
+  CertificateListLayout* app = new CertificateListLayout(this, &trust_store_);
+  Show(app); // Ownership of app transfered here.
+
+  if (!host_port_.empty()) {
+    app->GotoHost(host_port_);
+  }
 }
 }  // namespace x509ls
 

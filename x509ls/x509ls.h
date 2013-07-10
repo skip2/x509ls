@@ -41,6 +41,7 @@ class X509LS : public CliApplication {
 
   ScopedOpenSSLEnvironment openssl_;
   TrustStore trust_store_;
+  string host_port_;
 };
 }  // namespace x509ls
 
