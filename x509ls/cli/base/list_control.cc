@@ -88,6 +88,25 @@ bool ListControl::SelectNext() {
   return AdjustSelectedIndex(1);
 }
 
+bool ListControl::SelectLast() {
+  if (!model_) {
+    return false;
+  }
+
+  const unsigned int new_selected_index = model_->Size() - 1;
+
+  if (selected_index_ == new_selected_index) {
+    return false;
+  }
+
+  selected_index_ = new_selected_index;
+
+  Repaint();
+  Emit(kEventSelectedItemChanged);
+
+  return true;
+}
+
 // virtual
 int ListControl::PreferredHeight() const {
   return 5;

@@ -56,6 +56,9 @@ class ListControl : public CliControl {
   // Select the next item. The index is incremented by 1.
   bool SelectNext();
 
+  // Select the last item.
+  bool SelectLast();
+
   // Returns the preferred height of the control, default 5 rows.
   virtual int PreferredHeight() const;
 

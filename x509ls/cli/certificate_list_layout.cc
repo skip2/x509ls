@@ -174,6 +174,9 @@ void CertificateListLayout::OnEvent(const BaseObject* source, int event_code) {
           current_fetcher_->Path());
       list_controls_[kListControlIndexPeerChain]->SetModel(
           current_fetcher_->Chain());
+
+      list_controls_[kListControlIndexVerificationPath]->SelectLast();
+
       bottom_status_bar_->SetMainText(current_fetcher_->VerifyStatus());
       // Emitted ListControl::kSelectedItemChanged event used to update
       // certificate preview text.
