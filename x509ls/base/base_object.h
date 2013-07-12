@@ -12,7 +12,27 @@ using std::set;
 
 namespace x509ls {
 class CliApplication;
-
+// Base class for most certview objects.
+//
+// BaseObject:
+// - Provides hierarchical ownership of objects, which is convenient
+//   when working with trees of objects, such as GUI/CLI objects.
+// - Provides methods to work in an event driven program:
+//  - Simple event emission and delivery (which objects to signal each other
+//    without strong coupling)
+//  - A facility for monitoring file descriptors for activity.
+//  - A facility for having a method polled at regular (albeit undefined)
+//    intervals.
+//
+// Objects implementing BaseObject assume the existence of other components in
+// the application, namely the event loop and event delivery mechanism.
+//
+// The hierarchical ownership works as follows: All BaseObjects must be
+// allocated on the heap, and become owned by the |parent| object or
+// |application| as specified in the BaseObject constructor. When a BaseObject
+// is deleted, it first deletes its children (which then recursively delete
+// theirs and so on). This enables clearing up a whole tree of dynamically
+// allocated objects easily. Use of scoped_ptr could be an alternative.
 class BaseObject {
  public:
   // Construct a BaseObject, with |parent|. Becomes owned by |parent|, must be
