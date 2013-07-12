@@ -29,7 +29,7 @@ const char* CertificateListLayout::kMenuText = ""
 //  "z:settings";
 
 // static
-const int CertificateListLayout::kListControlIndexVerificationPath = 0;
+const int CertificateListLayout::kListControlIndexValidationPath = 0;
 
 // static
 const int CertificateListLayout::kListControlIndexPeerChain = 1;
@@ -44,28 +44,28 @@ CertificateListLayout::CertificateListLayout(CliApplication* application,
     text_control_(new TextControl(this, "")),
     bottom_status_bar_(new StatusBar(this, "")),
     command_line_(new CommandLine(this)),
-    displayed_list_control_index_(kListControlIndexVerificationPath),
+    displayed_list_control_index_(kListControlIndexValidationPath),
     lookup_type_(DnsLookup::kLookupTypeIPv4then6),
     tls_method_index_(0),
     tls_auth_type_index_(0),
     current_fetcher_(NULL) {
-  list_controls_[kListControlIndexVerificationPath] =
+  list_controls_[kListControlIndexValidationPath] =
         new CertificateListControl(
           this,
-          CertificateListControl::kTypeVerificationPath);
+          CertificateListControl::kTypeValidationPath);
 
   list_controls_[kListControlIndexPeerChain] =
         new CertificateListControl(
           this,
           CertificateListControl::kTypePeerChain),
-  Subscribe(list_controls_[kListControlIndexVerificationPath],
+  Subscribe(list_controls_[kListControlIndexValidationPath],
       ListControl::kEventSelectedItemChanged);
 
   Subscribe(list_controls_[kListControlIndexPeerChain],
       ListControl::kEventSelectedItemChanged);
 
   AddChild(menu_bar_);
-  AddChild(list_controls_[kListControlIndexVerificationPath]);
+  AddChild(list_controls_[kListControlIndexValidationPath]);
   AddChild(top_status_bar_);
   AddChild(text_control_);
   AddChild(bottom_status_bar_);
@@ -170,14 +170,13 @@ void CertificateListLayout::OnEvent(const BaseObject* source, int event_code) {
       break;
     case ChainFetcher::kStateConnectSuccess:
       DisplayConnectSuccessMessage();
-      list_controls_[kListControlIndexVerificationPath]->SetModel(
+      list_controls_[kListControlIndexValidationPath]->SetModel(
           current_fetcher_->Path());
       list_controls_[kListControlIndexPeerChain]->SetModel(
           current_fetcher_->Chain());
 
-      list_controls_[kListControlIndexVerificationPath]->SelectLast();
+      list_controls_[kListControlIndexValidationPath]->SelectLast();
 
-      bottom_status_bar_->SetMainText(current_fetcher_->VerifyStatus());
       // Emitted ListControl::kSelectedItemChanged event used to update
       // certificate preview text.
       break;
@@ -199,7 +198,7 @@ void CertificateListLayout::GotoHost(const string& user_input_node) {
     current_fetcher_->Cancel();
     Unsubscribe(current_fetcher_);
 
-    list_controls_[kListControlIndexVerificationPath]->SetModel(NULL);
+    list_controls_[kListControlIndexValidationPath]->SetModel(NULL);
     list_controls_[kListControlIndexPeerChain]->SetModel(NULL);
     UpdateDisplayedCertificate();
 
@@ -307,6 +306,26 @@ void CertificateListLayout::UpdateDisplayedCertificate() {
     list_controls_[displayed_list_control_index_]->CurrentCertificate();
 
   text_control_->SetText(certificate ? certificate->TextDescription() : "");
+
+  if (current_fetcher_ != NULL) {
+    switch (displayed_list_control_index_) {
+    case kListControlIndexValidationPath:
+      top_status_bar_->SetMainText("Showing Validation Path");
+      break;
+    case kListControlIndexPeerChain:
+      top_status_bar_->SetMainText("Showing Server Chain");
+      break;
+    }
+  } else {
+    top_status_bar_->SetMainText("");
+  }
+
+  if (displayed_list_control_index_ == kListControlIndexValidationPath &&
+     current_fetcher_ != NULL) {
+    bottom_status_bar_->SetMainText(current_fetcher_->VerifyStatus());
+  } else {
+    bottom_status_bar_->SetMainText("");
+  }
 }
 
 void CertificateListLayout::ShowCertificateViewLayout() {

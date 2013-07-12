@@ -12,10 +12,12 @@
 #include <openssl/x509.h>
 
 #include <list>
+#include <sstream>
 
 #include "x509ls/base/event_manager.h"
 
 using std::list;
+using std::stringstream;
 
 namespace x509ls {
 // static
@@ -61,7 +63,8 @@ SslClient::SslClient(BaseObject* parent, TrustStore* trust_store,
     ssl_ctx_(NULL),
     ssl_(NULL),
     chain_(),
-    path_() {
+    path_(),
+    verify_level_(0) {
   saddr_ = static_cast<sockaddr*>(malloc(saddr_len));
   memcpy(saddr_, saddr, saddr_len_);
 }
@@ -304,8 +307,21 @@ void SslClient::PopulateChainAndPath() {
         in_verification_path);
   }
 
-  verify_status_ = X509_verify_cert_error_string(
+  verify_level_ = path_.Size() - X509_STORE_CTX_get_error_depth(&ctx);
+
+  const int verify_error = X509_STORE_CTX_get_error(&ctx);
+
+  stringstream verify_status;
+  if (verify_error != X509_V_OK) {
+    verify_status << "Certificate ";
+    verify_status << verify_level_;
+    verify_status << ": ";
+  }
+
+  verify_status << X509_verify_cert_error_string(
       X509_STORE_CTX_get_error(&ctx));
+
+  verify_status_ = verify_status.str();
 
   X509_STORE_CTX_cleanup(&ctx);
 }
@@ -367,6 +383,10 @@ void SslClient::SetSNIHostname(const string& hostname) {
 
 string SslClient::VerifyStatus() const {
   return verify_status_;
+}
+
+int SslClient::VerifyLevel() const {
+  return verify_level_;
 }
 }  // namespace x509ls
 

@@ -104,14 +104,26 @@ string ChainFetcher::IPAddressAndPort() const {
 }
 
 const CertificateList* ChainFetcher::Chain() const {
+  if (state_ != kStateConnectSuccess) {
+    return NULL;
+  }
+
   return &(ssl_client_->Chain());
 }
 
 const CertificateList* ChainFetcher::Path() const {
+  if (state_ != kStateConnectSuccess) {
+    return NULL;
+  }
+
   return &(ssl_client_->Path());
 }
 
 string ChainFetcher::VerifyStatus() const {
+  if (state_ != kStateConnectSuccess) {
+    return "";
+  }
+
   return ssl_client_->VerifyStatus();
 }
 

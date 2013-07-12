@@ -13,6 +13,7 @@
 
 #include "x509ls/base/base_object.h"
 #include "x509ls/base/openssl/openssl_environment.h"
+#include "x509ls/base/openssl/scoped_openssl.h"
 #include "x509ls/base/types.h"
 #include "x509ls/certificate/certificate_list.h"
 #include "x509ls/certificate/trust_store.h"
@@ -101,6 +102,10 @@ class SslClient : public BaseObject {
   // Return the validation status string from OpenSSL.
   string VerifyStatus() const;
 
+  // Return the certificate index in the Path() to which the VerifyStatus()
+  // applies.
+  int VerifyLevel() const;
+
  private:
   NO_COPY_AND_ASSIGN(SslClient)
 
@@ -135,6 +140,8 @@ class SslClient : public BaseObject {
   CertificateList chain_;
   CertificateList path_;
   string verify_status_;
+  int verify_level_;
+
   void PopulateChainAndPath();
 
   bool IsX509InTrustStore(const X509* x509) const;

@@ -58,7 +58,7 @@ class CertificateListLayout : public CliControl {
   CommandLine* command_line_;
 
   // Indexes for |list_controls_|.
-  static const int kListControlIndexVerificationPath;
+  static const int kListControlIndexValidationPath;
   static const int kListControlIndexPeerChain;
 
   // Index of the currently displayed |list_controls_|.

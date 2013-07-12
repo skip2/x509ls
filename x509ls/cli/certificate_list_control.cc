@@ -63,13 +63,13 @@ void CertificateListControl::PaintLine(unsigned int index, unsigned int row,
   cols_for_common_name -= kFlagsSize + 1;  // Flags column + sp char.
   cols_for_common_name -= 2 + 1;  // Row number column + sp char.
 
-  // Verification paths are shown in a hierarchical representation.
+  // Validation paths are shown in a hierarchical representation.
   // 01234
   // + xxx
   //  + xxx
   //   + xxx
   string hierarchy_diagram;
-  if (list_type_ == kTypeVerificationPath) {
+  if (list_type_ == kTypeValidationPath) {
     cols_for_common_name -= 2 + index;
     hierarchy_diagram = string(index, ' ');
     hierarchy_diagram.append("+ ");

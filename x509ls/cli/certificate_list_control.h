@@ -42,7 +42,7 @@ class CertificateListControl : public ListControl {
   // Display style types.
   enum ListType {
     kTypePeerChain,
-    kTypeVerificationPath
+    kTypeValidationPath
   };
 
   // Construct a CertificateListControl with |parent|, of |list_type| and
