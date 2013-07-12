@@ -18,8 +18,8 @@ DnsLookup::DnsLookup(BaseObject* parent, const string& node,
       const string& service, LookupType lookup_type)
   :
     BaseObject(parent),
-    node_(node),
-    service_(service),
+    node_(strdup(node.c_str())),
+    service_(strdup(service.c_str())),
     lookup_type_(lookup_type),
     request_count_(0),
     result_index_(-1),
@@ -28,11 +28,19 @@ DnsLookup::DnsLookup(BaseObject* parent, const string& node,
 
 // virtual
 DnsLookup::~DnsLookup() {
+  bool can_free_node_and_service = true;
   for (int i = 0; i < request_count_; ++i) {
     int state = gai_cancel(&requests[i]);
     if (state == EAI_CANCELED || state == EAI_ALLDONE) {
       freeaddrinfo(requests[i].ar_result);
+    } else {
+      can_free_node_and_service = false;
     }
+  }
+
+  if (can_free_node_and_service) {
+    free(node_);
+    free(service_);
   }
 }
 
@@ -86,16 +94,16 @@ void DnsLookup::Start() {
 
   if (ipv4_index != -1) {
     request_count_++;
-    requests[ipv4_index].ar_name = node_.c_str();
-    requests[ipv4_index].ar_service = service_.c_str();
+    requests[ipv4_index].ar_name = node_;
+    requests[ipv4_index].ar_service = service_;
     requests[ipv4_index].ar_request = &config[0];
     requests[ipv4_index].ar_result = NULL;
   }
 
   if (ipv6_index != -1) {
     request_count_++;
-    requests[ipv6_index].ar_name = node_.c_str();
-    requests[ipv6_index].ar_service = service_.c_str();
+    requests[ipv6_index].ar_name = node_;
+    requests[ipv6_index].ar_service = service_;
     requests[ipv6_index].ar_request = &config[1];
     requests[ipv6_index].ar_result = NULL;
   }

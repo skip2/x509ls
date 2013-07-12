@@ -135,8 +135,8 @@ class DnsLookup : public BaseObject {
  private:
   NO_COPY_AND_ASSIGN(DnsLookup)
 
-  const string node_;
-  const string service_;
+  char* node_;
+  char* service_;
   const enum LookupType lookup_type_;
 
   struct gaicb* request_ptrs[2];
