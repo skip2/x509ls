@@ -109,8 +109,8 @@ void CommandLine::PaintEvent() {
   wclear(window);
 
   wmove(window, 0, 0);
-  wprintw(window, prompt_text_.c_str());
-  wprintw(window, input_text_.c_str());
+  wprintw(window, "%s", prompt_text_.c_str());
+  wprintw(window, "%s", input_text_.c_str());
   PositionCursor();
 
   wnoutrefresh(window);

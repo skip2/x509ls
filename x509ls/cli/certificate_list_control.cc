@@ -44,7 +44,7 @@ void CertificateListControl::PaintLine(unsigned int index, unsigned int row,
   }
 
   wmove(window, row, 0);
-  wprintw(window, string(Cols(), ' ').c_str());
+  wprintw(window, "%s", string(Cols(), ' ').c_str());
   wmove(window, row, 0);
 
   // Displays certificates in list or hierarchy format, based on |list_type_|.
@@ -126,7 +126,7 @@ void CertificateListControl::PaintLine(unsigned int index, unsigned int row,
   if (show_expiry) {
     wmove(window, row, Cols() - kExpiryColSize);
     wattron(Window(), A_BOLD);
-    wprintw(window, cert.NotAfterDate().c_str());
+    wprintw(window, "%s", cert.NotAfterDate().c_str());
     wattroff(Window(), A_BOLD);
   }
 

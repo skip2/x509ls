@@ -29,7 +29,7 @@ void MenuBar::PaintLeftText(int start_col) {
 
   wmove(window, 0, start_col);
   wattron(window, Colours::Get(Colours::kColourInfoBar));
-  wprintw(window, text_.c_str());
+  wprintw(window, "%s", text_.c_str());
 
   // Print a warning if the terminal is too small.
   int rows, cols;
@@ -38,7 +38,7 @@ void MenuBar::PaintLeftText(int start_col) {
   if (rows < 15 || cols < 50) {  // Picked by eye.
     wmove(window, 0, start_col);
     wattron(window, Colours::Get(Colours::kColourWarning));
-    wprintw(window, "Terminal too small!");
+    wprintw(window, "%s", "Terminal too small!");
   }
 }
 }  // namespace x509ls

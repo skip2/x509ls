@@ -50,7 +50,7 @@ void StatusBar::PaintLeftText(int start_col) {
 
   wmove(window, 0, start_col);
   wattron(window, Colours::Get(Colours::kColourInfoBar));
-  wprintw(window, main_text_.c_str());
+  wprintw(window, "%s", main_text_.c_str());
 }
 
 // virtual
@@ -59,7 +59,7 @@ void StatusBar::PaintRightText(int start_col) {
 
   wmove(window, 0, start_col);
   wattron(window, Colours::Get(Colours::kColourInfoBar));
-  wprintw(window, extra_text_.c_str());
+  wprintw(window, "%s", extra_text_.c_str());
 }
 }  // namespace x509ls
 
