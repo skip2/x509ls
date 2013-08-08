@@ -128,7 +128,7 @@ void ListControl::PaintEvent() {
   const int first_index = selected_index_ - selected_row_index;
 
   const int last_index = min(static_cast<int>(model_->Size() - 1),
-                                  first_index + Rows());
+                                  first_index + Rows() - 1);
 
   int row = 0;
   for (int i = first_index; i <= last_index; ++i, ++row) {

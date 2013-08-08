@@ -4,10 +4,14 @@
 #ifndef X509LS_X509LS_H_
 #define X509LS_X509LS_H_
 
+#include <string>
+
 #include "x509ls/base/openssl/openssl_environment.h"
 #include "x509ls/base/types.h"
 #include "x509ls/certificate/trust_store.h"
 #include "x509ls/cli/base/cli_application.h"
+
+using std::string;
 
 namespace x509ls {
 // Main x509ls application.

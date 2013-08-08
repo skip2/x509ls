@@ -79,7 +79,7 @@ bool X509LS::Init(int argc, char** argv) {
 // virtual
 void X509LS::RunEvent() {
   CertificateListLayout* app = new CertificateListLayout(this, &trust_store_);
-  Show(app); // Ownership of app transfered here.
+  Show(app);  // Ownership of app transfered here.
 
   if (!host_port_.empty()) {
     app->GotoHost(host_port_);
