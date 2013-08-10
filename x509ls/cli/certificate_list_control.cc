@@ -106,10 +106,10 @@ void CertificateListControl::PaintLine(unsigned int index, unsigned int row,
   PrintFlag(cert.IsInPeerChain(), 'c',
       selected ? Colours::kColourPurpleHighlighted : Colours::kColourPurple);
 
-  wattrset(Window(), Colours::Get(
+  wattrset(window, Colours::Get(
       selected ? Colours::kColourHighlighted : Colours::kColourDefault));
 
-  wattron(Window(), A_BOLD);
+  wattron(window, A_BOLD);
 
   wprintw(window, " %2d ",
       index + 1);  // Convert from zero-indexed to one-indexed for humans.
@@ -118,16 +118,16 @@ void CertificateListControl::PaintLine(unsigned int index, unsigned int row,
     wprintw(window, "%s", hierarchy_diagram.c_str());
   }
 
-  wattroff(Window(), A_BOLD);
+  wattroff(window, A_BOLD);
 
   wprintw(window, "%s",
       common_name.c_str());
 
   if (show_expiry) {
     wmove(window, row, Cols() - kExpiryColSize);
-    wattron(Window(), A_BOLD);
+    wattron(window, A_BOLD);
     wprintw(window, "%s", cert.NotAfterDate().c_str());
-    wattroff(Window(), A_BOLD);
+    wattroff(window, A_BOLD);
   }
 
   if (selected) {
