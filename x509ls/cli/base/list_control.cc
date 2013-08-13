@@ -49,7 +49,15 @@ bool ListControl::AdjustSelectedIndex(int adjustment) {
     return false;
   }
 
-  selected_index_ = new_index;
+  return SetSelectedIndex(new_index);
+}
+
+bool ListControl::SetSelectedIndex(unsigned int index) {
+  if (index == selected_index_) {
+    return false;
+  }
+
+  selected_index_ = index;
 
   Repaint();
   Emit(kEventSelectedItemChanged);
@@ -88,23 +96,21 @@ bool ListControl::SelectNext() {
   return AdjustSelectedIndex(1);
 }
 
+bool ListControl::SelectFirst() {
+  if (!model_) {
+    return false;
+  }
+
+  return SetSelectedIndex(0);
+}
+
 bool ListControl::SelectLast() {
   if (!model_) {
     return false;
   }
 
-  const unsigned int new_selected_index = model_->Size() - 1;
-
-  if (selected_index_ == new_selected_index) {
-    return false;
-  }
-
-  selected_index_ = new_selected_index;
-
-  Repaint();
-  Emit(kEventSelectedItemChanged);
-
-  return true;
+  const unsigned int last_index = model_->Size() - 1;
+  return SetSelectedIndex(last_index);
 }
 
 // virtual

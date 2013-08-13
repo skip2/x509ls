@@ -128,6 +128,14 @@ bool CertificateListLayout::KeyPressEvent(int keypress) {
     list_controls_[displayed_list_control_index_]->SelectNext();
     handled = true;
     break;
+  case KEY_HOME:
+    list_controls_[displayed_list_control_index_]->SelectFirst();
+    handled = true;
+    break;
+  case KEY_END:
+    list_controls_[displayed_list_control_index_]->SelectLast();
+    handled = true;
+    break;
   case '\n':
   case KEY_ENTER:
     ShowCertificateViewLayout();

@@ -61,7 +61,7 @@ void CertificateListControl::PaintLine(unsigned int index, unsigned int row,
   bool show_expiry = false;
   int cols_for_common_name = Cols();
   cols_for_common_name -= kFlagsSize + 1;  // Flags column + sp char.
-  cols_for_common_name -= 2 + 1;  // Row number column + sp char.
+  cols_for_common_name -= 3 + 1;  // Row number column + sp char.
 
   // Validation paths are shown in a hierarchical representation.
   // 01234
@@ -111,7 +111,7 @@ void CertificateListControl::PaintLine(unsigned int index, unsigned int row,
 
   wattron(window, A_BOLD);
 
-  wprintw(window, " %2d ",
+  wprintw(window, " %3d ",
       index + 1);  // Convert from zero-indexed to one-indexed for humans.
 
   if (!hierarchy_diagram.empty()) {

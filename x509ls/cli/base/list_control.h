@@ -56,6 +56,9 @@ class ListControl : public CliControl {
   // Select the next item. The index is incremented by 1.
   bool SelectNext();
 
+  // Select the first item.
+  bool SelectFirst();
+
   // Select the last item.
   bool SelectLast();
 
@@ -114,6 +117,11 @@ class ListControl : public CliControl {
   //  Given the selected index in the model, return the index of the screen row
   //  it should be displayed at, as above.
   unsigned int SelectedRowIndex(WINDOW* window) const;
+
+  // Set the selected index to |index|. If |index| matches the current index,
+  // returns false. Otherwise, sets the index, repaints the control, emits
+  // kEventSelectedItemChanged, then returns true.
+  bool SetSelectedIndex(unsigned int index);
 };
 }  // namespace x509ls
 
