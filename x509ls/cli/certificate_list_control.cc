@@ -4,6 +4,7 @@
 #include "x509ls/cli/certificate_list_control.h"
 
 #include <assert.h>
+#include <ctype.h>
 #include <ncurses.h>
 #include <stddef.h>
 
@@ -16,6 +17,7 @@
 #include "x509ls/cli/base/list_model.h"
 
 using std::max;
+using std::replace_if;
 using std::string;
 
 namespace x509ls {
@@ -87,6 +89,12 @@ void CertificateListControl::PaintLine(unsigned int index, unsigned int row,
     common_name = cert.Subject();
   }
 
+  // Replace any unprintable (i.e. control) characters with '?'.
+  replace_if(common_name.begin(),
+      common_name.end(),
+      IsUnprintableChar,
+      '?');
+
   if (static_cast<int>(common_name.size()) > cols_for_common_name) {
     common_name.erase(max(0, cols_for_common_name - 3));
     common_name.append("...");
@@ -154,6 +162,11 @@ const Certificate* CertificateListControl::CurrentCertificate() const {
   }
 
   return &(*model_)[index];
+}
+
+// static
+bool CertificateListControl::IsUnprintableChar(char c) {
+  return !isprint(c);
 }
 }  // namespace x509ls
 

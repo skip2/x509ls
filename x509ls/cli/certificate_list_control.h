@@ -81,6 +81,9 @@ class CertificateListControl : public ListControl {
   // If |flag| print |symbol|, otherwise print '.'.
   void PrintFlag(bool flag, char symbol,
       Colours::ColourType colour_type);
+
+  // Returns true if |c| is an unprintable character (i.e. a control character).
+  static bool IsUnprintableChar(char c);
 };
 }  // namespace x509ls
 
