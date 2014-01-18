@@ -68,10 +68,12 @@ class CertificateListLayout : public CliControl {
   // Text input mode.
   enum TextInputType {
     kTextInputTypeGo,   // Text input of host in progress.
+    kTextInputTypeSave, // Save certificates filename.
     kTextInputTypeNone  // No text input in progress.
   };
   enum TextInputType current_text_input_type_;
 
+  void ShowSaveCertificatesPrompt();
   void ShowGotoHostPrompt();
 
   // ---------------------------------------------------------------------------
@@ -100,6 +102,8 @@ class CertificateListLayout : public CliControl {
   void ToggleDisplayedListControl();
   void UpdateDisplayedCertificate();
   void ShowCertificateViewLayout();
+
+  void SaveCertificates(const string& filename);
 
   static bool ReadUserInputNode(const string& node_input,
       string* node, string* port);

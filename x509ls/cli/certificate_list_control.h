@@ -61,6 +61,9 @@ class CertificateListControl : public ListControl {
   // See the constructor description for |model|'s lifetime requirements.
   void SetModel(const CertificateList* model);
 
+  // Returns the current certificate list.
+  const CertificateList* Model() const;
+
   // Return the Certificate currently selected, or NULL if none is selected.
   const Certificate* CurrentCertificate() const;
 

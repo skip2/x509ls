@@ -25,8 +25,7 @@
 namespace x509ls {
 // static
 const char* CertificateListLayout::kMenuText = ""
-  "q:quit g:goto-host r:reload t:toggle-display ";
-//  "z:settings";
+  "q:quit g:goto-host r:reload t:toggle-display s:save";
 
 // static
 const int CertificateListLayout::kListControlIndexValidationPath = 0;
@@ -106,6 +105,9 @@ bool CertificateListLayout::KeyPressEvent(int keypress) {
     tls_method_index_ = SslClient::NextTlsMethod(tls_method_index_);
     UpdateStatusBarOptionsText();
     break;
+  case 's':
+    ShowSaveCertificatesPrompt();
+    break;
   case 'v':
     lookup_type_ = DnsLookup::NextLookupType(lookup_type_);
     UpdateStatusBarOptionsText();
@@ -160,6 +162,9 @@ void CertificateListLayout::OnEvent(const BaseObject* source, int event_code) {
       switch (current_text_input_type_) {
       case kTextInputTypeGo:
         GotoHost(command_line_->InputText());
+        break;
+      case kTextInputTypeSave:
+        SaveCertificates(command_line_->InputText());
         break;
       case kTextInputTypeNone:
         break;
@@ -389,6 +394,68 @@ bool CertificateListLayout::DetermineNodeAndPort(
 void CertificateListLayout::TidyNode(string* node) {
   node->erase(std::remove(node->begin(), node->end(), '['), node->end());
   node->erase(std::remove(node->begin(), node->end(), ']'), node->end());
+}
+
+void CertificateListLayout::ShowSaveCertificatesPrompt() {
+  const CertificateList* certificate_list =
+    list_controls_[displayed_list_control_index_]->Model();
+  if (!certificate_list || certificate_list->Size() == 0) {
+    bottom_status_bar_->SetMainText("No certificates to save.");
+    return;
+  }
+
+  current_text_input_type_ = kTextInputTypeSave;
+
+  SetFocusedChild(command_line_);
+  Subscribe(command_line_, CommandLine::kEventInputAccepted);
+  Subscribe(command_line_, CommandLine::kEventInputCancelled);
+  command_line_->DisplayPrompt("Save as file: ", ".pem");
+}
+
+void CertificateListLayout::SaveCertificates(const string& filename) {
+  const CertificateList* certificate_list =
+    list_controls_[displayed_list_control_index_]->Model();
+
+  string result_message;
+  bool success = true;
+  FILE* file = NULL;
+
+  if (!certificate_list || certificate_list->Size() == 0) {
+    result_message = "No certificates to save.";
+    goto finish;
+  }
+
+  file = fopen(filename.c_str(), "w");
+  if (!file) {
+    result_message = "Error opening file: ";
+    result_message.append(strerror(errno));
+    goto finish;
+  }
+
+  for (size_t i = 0; i < certificate_list->Size(); ++i) {
+    const string pem_certificate = (*certificate_list)[i].AsPEM();
+
+    size_t bytes_written = fwrite(pem_certificate.c_str(),
+        sizeof(char),  // NOLINT(runtime/sizeof)
+        pem_certificate.size(), file);
+
+    if (bytes_written != pem_certificate.size()) {
+      result_message = "Error writing file: ";
+      result_message.append(strerror(errno));
+      success = false;
+      break;
+    }
+  }
+
+  fclose(file);
+
+  if (success) {
+    result_message = "Saved successfully.";
+  }
+
+finish:
+  bottom_status_bar_->SetMainText(result_message);
+  command_line_->Clear();
 }
 }  // namespace x509ls
 

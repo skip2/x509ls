@@ -164,6 +164,10 @@ const Certificate* CertificateListControl::CurrentCertificate() const {
   return &(*model_)[index];
 }
 
+const CertificateList* CertificateListControl::Model() const {
+  return model_;
+}
+
 // static
 bool CertificateListControl::IsUnprintableChar(char c) {
   return !isprint(c);
