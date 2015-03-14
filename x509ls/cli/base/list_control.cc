@@ -45,7 +45,7 @@ bool ListControl::AdjustSelectedIndex(int adjustment) {
 
   const int new_index = selected_index_ + adjustment;
 
-  if (!(new_index >= 0 && new_index < model_->Size())) {
+  if (!(new_index >= 0 && static_cast<size_t>(new_index) < model_->Size())) {
     return false;
   }
 
