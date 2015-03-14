@@ -33,9 +33,6 @@ bool TextControl::Scroll(const enum ScrollDirection direction, int lines) {
     return false;
   }
 
-  WINDOW* window = Window();
-  assert(window != NULL);
-
   int adjustment = lines != 0 ? lines : Rows();
   if (direction == kDirectionUp) {
     adjustment = -adjustment;
