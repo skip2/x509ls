@@ -1,4 +1,4 @@
-A text-based SSL certificate viewer. Shows an SSL server's certificate chain, and the validation path formed by OpenSSL.
+A text-based SSL certificate viewer. Shows an SSL server's certificate chain, and the validation path formed by OpenSSL. [![Build Status](https://travis-ci.org/skip2/x509ls.svg?branch=master)](https://travis-ci.org/skip2/x509ls)
 
 Similar to the certificate viewer found in web browsers, only more keyboard friendly.
 
