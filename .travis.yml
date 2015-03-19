@@ -8,6 +8,8 @@ cache: apt
 
 before_install:
  - sudo apt-get update -qq
+
+install:
  - sudo apt-get install -qq cmake make g++ libncurses5-dev libssl-dev
 
 script:
