@@ -23,6 +23,7 @@ namespace x509ls {
 // static
 const struct SslClient::TlsMethod
   SslClient::methods_[] = {
+  {SSLv23_client_method(), "SSLv3,TLSv1+"},
   {TLSv1_client_method(), "TLSv1"},
 #ifdef SSL_TXT_TLSV1_1
   {TLSv1_1_client_method(), "TLSv1.1"},
@@ -31,7 +32,6 @@ const struct SslClient::TlsMethod
   {TLSv1_2_client_method(), "TLSv1.2"},
 #endif
   {SSLv3_client_method(), "SSLv3"},
-  {SSLv23_client_method(), "SSLv2,3+TLSv1"},
   {NULL, ""}
 };
 
